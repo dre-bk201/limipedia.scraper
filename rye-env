@@ -1,0 +1,2 @@
+source $HOME/.rye/env
+source .venv/bin/activate
