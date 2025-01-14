@@ -34,6 +34,7 @@ jobs:
         run: |
           git add --force pages
           git commit -m "update: caching additional pages"
+          git restore .
           git push
 
       - name: Read version number
