@@ -36,9 +36,9 @@ jobs:
           git commit -m "update: caching additional pages"
 
       - name: Push Changes to github
-          run: |
-            git restore databases
-            git push
+        run: |
+          git restore databases
+          git push
 
       - name: Read version number
         id: version
