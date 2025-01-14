@@ -45,8 +45,8 @@ def init_database():
         if True:
             # with database as db:
             metadata = database.table("metadata")
-            if metadata.get(where("version").exists()):
-                continue
+            # if metadata.get(where("version").exists()):
+            #     continue
 
             metadata.upsert(
                 Document(
