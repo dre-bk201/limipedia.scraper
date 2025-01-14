@@ -30,15 +30,16 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-      - name: Commit version.json
+      - name: Discard changes in databases/
+        run: git restore --staged databases && git checkout -- databases
+
+      - name: Commit updated files
         run: |
           git add --force pages
-          git commit -m "update: caching additional pages"
+          git commit -m "update: caching additional pages" || echo "No changes to commit"
 
-      - name: Push Changes to github
-        run: |
-          git restore databases
-          git push
+      - name: Push Changes to GitHub
+        run: git push
 
       - name: Read version number
         id: version
