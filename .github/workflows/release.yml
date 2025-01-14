@@ -32,7 +32,7 @@ jobs:
 
       - name: Commit version.json
         run: |
-          git add pages
+          git add --force pages
           git commit -m "update: caching additional pages"
           git push
 
