@@ -45,7 +45,7 @@ class Route:
 
 def soupify(url: str, endpoint: str = "", name: Optional[str] = None) -> BeautifulSoup:
     content: bytes
-    name = name.replace('"', "'", 10) if name else name
+    name = name.replace('"', "'", 10).replace("?", "", 10) if name else name
     path = Path(f"pages/{endpoint}/{name or extract_id(url)}.html")
 
     if not path.exists():
@@ -65,8 +65,8 @@ def parse_int_or(value, or_=None) -> int | None:
         return or_
 
 
-def extract_id(url: str) -> int:
-    return int(url.split("/")[-1].split(".")[0])
+def extract_id(url: str) -> str:
+    return url.split("/")[-1].split(".")[0]
 
 
 def pp(*arg: Any, indent: int = 4):

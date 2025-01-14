@@ -13,6 +13,7 @@ class Constants:
     AWAKENING_MATERIALS_ITEMS = "Materials Needed (Items)"
     ENLIGHTENING_INFO = "Enlightening Info"
     PASSIVE_SKILL = "Passive Skill"
+    BURST_SKILLS = "Burst Skills"
 
     HIDDEN_POTENTIAL = "Hidden Potential"
     URL = Route("https://jam-capture-unisonleague-ww.ateamid.com")

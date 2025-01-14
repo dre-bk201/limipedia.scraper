@@ -1,3 +1,5 @@
+import requests
+
 from tinydb import TinyDB, where
 from tinydb.database import Document
 from tinydb_smartcache import SmartCacheTable  # caching needs to be done on the API
@@ -7,43 +9,13 @@ from pathlib import Path
 
 from limipedia.scraper.utils import dataclass
 
-w_db = TinyDB("releases/weapons.json")
-d_db = TinyDB("releases/defgears.json")
-m_db = TinyDB("releases/monsters.json")
-a_db = TinyDB("releases/abilities.json")
-f_db = TinyDB("releases/furnitures.json")
-
-# w_db = TinyDB(
-#     Path("releases/weapons.json"),
-#     access_mode="r+",
-#     storage=BetterJSONStorage,
-#     _ignore_multiple_size=True,
-# )
-# d_db = TinyDB(
-#     Path("releases/defgears.json"),
-#     access_mode="r+",
-#     storage=BetterJSONStorage,
-#     _ignore_multiple_size=True,
-# )
-# m_db = TinyDB(
-#     Path("releases/monsters.json"),
-#     access_mode="r+",
-#     storage=BetterJSONStorage,
-#     _ignore_multiple_size=True,
-# )
-# a_db = TinyDB(
-#     Path("releases/abilities.json"),
-#     access_mode="r+",
-#     storage=BetterJSONStorage,
-#     _ignore_multiple_size=True,
-# )
-# f_db = TinyDB(
-#     Path("releases/furnitures.json"),
-#     access_mode="r+",
-#     storage=BetterJSONStorage,
-#     _ignore_multiple_size=True,
-# )
-
+databases = {
+    "weapons": TinyDB("databases/weapons.json"),
+    "defgears": TinyDB("databases/defgears.json"),
+    "monsters": TinyDB("databases/monsters.json"),
+    "furniture": TinyDB("databases/furniture.json"),
+    "abilities": TinyDB("databases/abilities.json"),
+}
 
 @dataclass
 class Version:
@@ -52,18 +24,34 @@ class Version:
     patch_date: str
 
 
-def init_db():
-    for db in [w_db, d_db, m_db, a_db, f_db]:
+def init_database():
+    global databases
+
+    latest_release = "https://github.com/dre-bk201/limipedia.scraper/releases/latest/download/{}.json"
+    database_names = ["weapons", "monsters", "defgears", "abilities", "furniture"]
+
+    for db_name in database_names:
+        try:
+            response = requests.get(latest_release.format(db_name))
+            if response.status_code != 200: raise Exception("Request Error")
+            with open(f"databases/{db_name}.json", "wb") as f:
+                f.write(response.content)
+        except Exception as _:
+            f = open(f"databases/{db_name}.json", "wb")
+            f.close()
+
+
+    for database in databases.values():
         if True:
             # with database as db:
-            metadata = db.table("metadata")
+            metadata = database.table("metadata")
             if metadata.get(where("version").exists()):
                 continue
 
-            metadata.insert(
+            metadata.upsert(
                 Document(
                     Version(
-                        version="0.0.1",
+                        version="0.0.3",
                         description="initial scraping",
                         patch_date=str(datetime.now()),
                     ).asdict(),

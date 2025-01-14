@@ -130,11 +130,11 @@ class Restriction:
 
 @dataclass
 class HiddenPotential:
-    lvl1_effect: str
-    lvl2_effect: str
-    lvl3_effect: str
-    lvl4_effect: str
-    lvl5_effect: Optional[str] = None
+    lv1_effect: str
+    lv2_effect: str
+    lv3_effect: str
+    lv4_effect: str
+    lv5_effect: Optional[str] = None
     restrictions: Optional[Restriction] = None
 
 
@@ -156,11 +156,12 @@ class Monster:
     stats: Union[MonsterStats, Stats] = field(default_factory=dict)
     skill: Skill = field(default_factory=dict)
     burst_skills: Optional[Skill] = None
-    hidden_potential_count: Optional[HiddenPotential] = None
+    hidden_potential: Optional[HiddenPotential] = None
     passive_skill: Optional[Skill] = None
     reforge_info: ReforgeInfo = field(default_factory=dict)
     reforge_materials: Optional[List[Item]] = None
-    elightening_info: Optional[EnlighteningInfo] = None
+    enlightening_info: Optional[EnlighteningInfo] = None
     awakening_info: Optional[AwakeningInfo] = None
     materials_needed_gear: Optional[List[Item]] = None
     materials_needed_item: Optional[List[Item]] = None
+# in-15307756

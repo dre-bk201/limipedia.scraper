@@ -11,10 +11,10 @@ timeouts = [1, 4, 2, 3, 6, 8, 9, 7]
 
 class Scraper:
     def __init__(self):
-        init_db()
+        init_database()
         self._weapons()
-        # self._defgears()
-        # self._monsters()
+        self._defgears()
+        self._monsters()
         # self._abilities()
         # self._furnitures()
 
@@ -26,12 +26,12 @@ class Scraper:
             "/en/equip_list/1_3.html",
             "/en/equip_list/1_4.html",
         ]
-        db = w_db.table("weapons")
+        weapons_table = databases["weapons"].table("weapons")
 
-        for route in rarity_routes[:1]:
+        for route in rarity_routes:
             # for route in rarity_routes:
             soup = soupify(cn.URL.join(route).route, endpoint="weapons")
-            for td_a in soup.select("td a")[:1]:
+            for td_a in soup.select("td a"):
                 wpn, basic_info, stats = Weapon(), {}, defaultdict(list)
                 thumbnail, *ele_overlay = td_a.select("img")
 
@@ -45,20 +45,20 @@ class Scraper:
                 )
 
                 # checks if gear exists in database, and skips if found
-                # matches = db.search(where("id") == wpn.id)
-                # if len(matches) > 0:
-                #     print(f"[STATUS]: found {wpn.id}, skipping...")
-                #     continue
+                matches = weapons_table.search(where("id") == wpn.id)
+                if len(matches) > 0:
+                    print(f"[STATUS]: found {wpn.id}, skipping...")
+                    continue
 
                 # shuffle(timeouts)
                 # time.sleep(timeouts[0])
 
                 details_page_soup = soupify(
-                    cn.URL.join(td_a.get("href")).route, 
+                    cn.URL.join(td_a.get("href")).route,
                     endpoint="weapons",
                     name=f"{wpn.name}-{wpn.id}",
                 )
-                details_page_soup = soupify("https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/1015157.html", endpoint="weapons", name=f"{wpn.name}-{wpn.id}")
+                # details_page_soup = soupify("https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/1015157.html", endpoint="weapons", name=f"Absolute Xenoblade-1015157")
                 # details_page_soup = BeautifulSoup(httpx.get("https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/1025015.html").text, 'lxml')
                 # details_page_soup = BeautifulSoup(httpx.get("https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/1015091.html").text, 'lxml')
 
@@ -158,6 +158,56 @@ class Scraper:
                                 after_awakening=items[desc_terms[1]],
                             )
 
+                            titles = details_page_soup.select("div.sp_evo_title")
+                            for title in titles:
+                                match title.text.strip():
+                                    case cn.AWAKENING_MATERIALS_GEAR:
+                                        content = title.find_next_sibling().select("td:not(.no_boder)")
+                                        print("len: ", len(content))
+                                        wpn.awakening_gears = []
+
+                                        for element in content:
+                                            gear_image, *overlay = element.select("img")
+                                            wpn.awakening_gears.append(
+                                                Item(
+                                                    id=extract_id(  # pyright: ignore
+                                                        gear_image.get("data-src")
+                                                    ),
+                                                    name=element.select_one("p").get_text(),
+                                                    image=cn.URL.join(
+                                                        gear_image.get("data-src")
+                                                    ).route,
+                                                    element_overlay=None
+                                                    if len(overlay) <= 0
+                                                    else cn.URL.join(
+                                                        overlay[0].get("data-src")
+                                                    ).route,
+                                                )
+                                            )
+
+                                    case cn.AWAKENING_MATERIALS_ITEMS:
+                                        items = title.find_next_sibling().select("td:not(.no_boder)")
+                                        wpn.awakening_items = []
+
+                                        for item in items:
+                                            wpn.awakening_items.append(
+                                                Item(
+                                                    id=extract_id(  # pyright: ignore
+                                                        item.select_one("img").attrs["data-src"]
+                                                    ),
+                                                    name=item.select_one("p").get_text(),
+                                                    image=cn.URL.join(
+                                                        item.select_one("img").attrs["data-src"]
+                                                    ).route,
+                                                    element_overlay=None
+                                                    if len(overlay) <= 0
+                                                    else cn.URL.join(
+                                                        overlay[0].get("data-src")
+                                                    ).route,
+                                                )
+                                            )
+
+
                         case cn.REFORGE_MATERIALS:
                             items = title_bar.find_next_sibling().select("dd")
                             wpn.reforge_materials = []
@@ -180,51 +230,7 @@ class Scraper:
                                     )
                                 )
 
-                        case cn.AWAKENING_MATERIALS_GEAR:
-                            elements = title_bar.find_next_sibling().select("td")
-                            wpn.awakening_materials_gear = []
-                            for element in elements:
-                                gear_image, *overlay = element.select("img")
-                                wpn.awakening_materials_gear.append(
-                                    Item(
-                                        id=extract_id(  # pyright: ignore
-                                            element.select_one("a").attrs["href"]
-                                        ),
-                                        name=element.select_one("p").get_text(),
-                                        image=cn.URL.join(
-                                            gear_image.get("data-src")
-                                        ).route,
-                                        element_overlay=None
-                                        if len(overlay) <= 0
-                                        else cn.URL.join(
-                                            overlay[0].get("data-src")
-                                        ).route,
-                                    )
-                                )
-                        case cn.AWAKENING_MATERIALS_ITEMS:
-                            items = title_bar.find_next_sibling().select("td")
-                            wpn.awakening_items = []
-                            for item in items:
-                                wpn.awakening_items.append(
-                                    Item(
-                                        id=extract_id(  # pyright: ignore
-                                            item.select_one("a").attrs["href"]
-                                        ),
-                                        name=item.select_one("p").get_text(),
-                                        image=cn.URL.join(
-                                            item.select_one("img").attrs["data-src"]
-                                        ).route,
-                                        element_overlay=None
-                                        if len(overlay) <= 0
-                                        else cn.URL.join(
-                                            overlay[0].get("data-src")
-                                        ).route,
-                                    )
-                                )
-
-
-                print(wpn)
-                # db.insert(Document(wpn.asdict(), doc_id=wpn.id))
+                weapons_table.insert(Document(wpn.asdict(), doc_id=wpn.id))
 
     def _defgears(self):
         rarity_routes = [
@@ -235,7 +241,8 @@ class Scraper:
             "/en/equip_list/23_4.html",
         ]
 
-        db = d_db.table("defgears")
+        defgears_table = databases["defgears"].table("defgears")
+
         for route in rarity_routes[:]:
             soup = soupify(cn.URL.join(route).route, endpoint="defgears")
 
@@ -253,7 +260,7 @@ class Scraper:
                 )
 
                 # checks if gear exists in database, and skips if found
-                matches = db.search(where("id") == defgear.id)
+                matches = defgears_table.search(where("id") == defgear.id)
                 if len(matches) > 0:
                     print(f"[STATUS]: found {defgear.id}, skipping...")
                     continue
@@ -332,6 +339,55 @@ class Scraper:
                                 after_awakening=items[desc_terms[1]],
                             )
 
+                            titles = details_page_soup.select("div.sp_evo_title")
+                            for title in titles:
+                                match title.text.strip():
+                                    case cn.AWAKENING_MATERIALS_GEAR:
+                                        content = title.find_next_sibling().select("td:not(.no_boder)")
+                                        print("len: ", len(content))
+                                        defgear.awakening_gears = []
+
+                                        for element in content:
+                                            gear_image, *overlay = element.select("img")
+                                            defgear.awakening_gears.append(
+                                                Item(
+                                                    id=extract_id(  # pyright: ignore
+                                                        gear_image.get("data-src")
+                                                    ),
+                                                    name=element.select_one("p").get_text(),
+                                                    image=cn.URL.join(
+                                                        gear_image.get("data-src")
+                                                    ).route,
+                                                    element_overlay=None
+                                                    if len(overlay) <= 0
+                                                    else cn.URL.join(
+                                                        overlay[0].get("data-src")
+                                                    ).route,
+                                                )
+                                            )
+
+                                    case cn.AWAKENING_MATERIALS_ITEMS:
+                                        items = title.find_next_sibling().select("td:not(.no_boder)")
+                                        defgear.awakening_items = []
+
+                                        for item in items:
+                                            defgear.awakening_items.append(
+                                                Item(
+                                                    id=extract_id(  # pyright: ignore
+                                                        item.select_one("img").attrs["data-src"]
+                                                    ),
+                                                    name=item.select_one("p").get_text(),
+                                                    image=cn.URL.join(
+                                                        item.select_one("img").attrs["data-src"]
+                                                    ).route,
+                                                    element_overlay=None
+                                                    if len(overlay) <= 0
+                                                    else cn.URL.join(
+                                                        overlay[0].get("data-src")
+                                                    ).route,
+                                                )
+                                            )
+
                         case cn.REFORGE_MATERIALS:
                             items = title_bar.find_next_sibling().select("dd")
                             defgear.reforge_materials = []
@@ -340,54 +396,12 @@ class Scraper:
                                 gear_image, *overlay = item.select("img")
                                 defgear.reforge_materials.append(
                                     Item(
-                                        id=extract_id(
+                                        id=extract_id( # pyright: ignore
                                             item.select_one("a").attrs["href"]
                                         ),
                                         name=item.select_one("p").get_text(),
                                         image=cn.URL.join(
                                             gear_image.get("data-src")
-                                        ).route,
-                                        element_overlay=None
-                                        if len(overlay) <= 0
-                                        else cn.URL.join(
-                                            overlay[0].get("data-src")
-                                        ).route,
-                                    )
-                                )
-
-                        case cn.AWAKENING_MATERIALS_GEAR:
-                            elements = title_bar.find_next_sibling().select("td")
-                            defgear.awakening_materials_gear = []
-                            for element in elements:
-                                gear_image, *overlay = element.select("img")
-                                defgear.awakening_materials_gear.append(
-                                    Item(
-                                        id=extract_id(  # pyright: ignore
-                                            element.select_one("a").attrs["href"]
-                                        ),
-                                        name=element.select_one("p").get_text(),
-                                        image=cn.URL.join(
-                                            gear_image.get("data-src")
-                                        ).route,
-                                        element_overlay=None
-                                        if len(overlay) <= 0
-                                        else cn.URL.join(
-                                            overlay[0].get("data-src")
-                                        ).route,
-                                    )
-                                )
-                        case cn.AWAKENING_MATERIALS_ITEMS:
-                            items = title_bar.find_next_sibling().select("td")
-                            defgear.awakening_items = []
-                            for item in items:
-                                defgear.awakening_items.append(
-                                    Item(
-                                        id=extract_id(  # pyright: ignore
-                                            item.select_one("a").attrs["href"]
-                                        ),
-                                        name=item.select_one("p").get_text(),
-                                        image=cn.URL.join(
-                                            item.select_one("img").attrs["data-src"]
                                         ).route,
                                         element_overlay=None
                                         if len(overlay) <= 0
@@ -397,7 +411,7 @@ class Scraper:
                                     )
                                 )
                 # print(defgear)
-                db.insert(Document(defgear.asdict(), doc_id=defgear.id))
+                defgears_table.insert(Document(defgear.asdict(), doc_id=defgear.id))
 
     def _abilities(self):
         pass
@@ -414,32 +428,70 @@ class Scraper:
             "/en/equip_list/4_5.html",
         ]
 
-        for route in rarity_routes[:1]:
-            soup = soupify(cn.URL.join(route).route)
+        monster_table =  databases["monsters"]
 
-            for td_a in soup.select("td a")[:1]:
-                monster, basic_info, stats = {}, {}, defaultdict(list)
+        for route in rarity_routes:
+            soup = soupify(cn.URL.join(route).route, endpoint="monsters")
+
+            for td_a in soup.select("td a"):
+                monster, basic_info, stats = Monster(), {}, defaultdict(list)
                 thumbnail, *ele_overlay = td_a.select("img")
 
-                monster["thumbnail"] = cn.URL.join(thumbnail.get("data-src")).route
-                monster["id"] = extract_id(monster["thumbnail"])
-                monster["element_overlay_img"] = (
+                monster.thumbnail = cn.URL.join(thumbnail.get("data-src")).route
+                monster.id = extract_id(monster.thumbnail)
+                monster.name = td_a.select_one("p").get_text()
+                monster.element_overlay_img = (
                     cn.URL.join(ele_overlay[0].get("data-src")).route
                     if len(ele_overlay) > 0
                     else None
                 )
 
-                details_page_soup = soupify(cn.URL.join(td_a.get("href")).route)
-                # details_page_soup = soupify("https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/1916106.html")
+                # checks if gear exists in database, and skips if found
+                matches = monster_table.search(where("id") == monster.id)
+                if len(matches) > 0:
+                    print(f"[STATUS]: found {monster.name}, skipping...")
+                    continue
 
-                monster["name"] = details_page_soup.select_one(
-                    "p.name__text"
-                ).get_text()
-                monster["image"] = cn.URL.join(
+                # details_page_soup = soupify(cn.URL.join(td_a.get("href")).route)
+
+                details_page_soup = soupify(
+                    cn.URL.join(td_a.get("href")).route,
+                    endpoint="monsters",
+                    name=f"{monster.name}-{monster.id}",
+                )
+
+                # details_page_soup = soupify(
+                #     "https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/1916106.html",
+                #     endpoint="monsters",
+                # )
+
+                # details_page_soup = soupify(
+                #     "https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/4415110.html",
+                #     endpoint="monsters",
+                # )
+
+                # details_page_soup = soupify(
+                #     "https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/4415002.html",
+                #     endpoint="monsters",
+                # )
+
+                # details_page_soup = soupify(
+                #     "https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/4415316.html",
+                #     endpoint="monsters",
+                # )
+
+                # details_page_soup = soupify(
+                #     "https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/4415019.html",
+                #     endpoint="monsters",
+                # )
+
+                monster.image = cn.URL.join(
                     details_page_soup.select_one(".detail__img-block > img").attrs[
                         "data-src"
                     ]
                 ).route
+
+                print(f"[STATUS]: scraping {monster.name}")
 
                 for title_bar in details_page_soup.select(".title_bar"):
                     match title_bar.select_one(".title_bar--text").text.strip():
@@ -460,7 +512,7 @@ class Scraper:
                                     parse_int_or(value, value)
                                 )
 
-                            monster["basic_info"] = MonsterBasicInfo(**basic_info)
+                            monster.basic_info = MonsterBasicInfo(**basic_info)
 
                         case cn.STATS:
                             stats_desc_list = title_bar.find_next_sibling()
@@ -478,16 +530,181 @@ class Scraper:
                                     )
                                     stats[key].append(parse_int_or(dd.get_text()))
 
-                            monster["stats"] = (
+                            monster.stats = (
                                 Stats(**stats)
                                 if "stats1" not in stats
                                 else MonsterStats(**stats)
                             )
 
                         case cn.SKILL:
-                            pass
+                            skill_table = title_bar.find_next_sibling()
+                            name, effect = skill_table.select("dd")
+                            monster.skill = Skill(
+                                name=name.get_text(),
+                                effect=effect.get_text()
+                            )
 
-                print(monster["stats"])
+                        case cn.PASSIVE_SKILL:
+                            skill_table = title_bar.find_next_sibling()
+                            name, effect = skill_table.select("dd")
+                            monster.passive_skill = Skill(
+                                name=name.get_text(),
+                                effect=effect.get_text()
+                            )
+
+                        case cn.BURST_SKILLS:
+                            skill_table = title_bar.find_next_sibling()
+                            name, effect = skill_table.select("dd")
+                            monster.burst_skills = Skill(
+                                name=name.get_text(),
+                                effect=effect.get_text()
+                            )
+
+                        case cn.REFORGE_INFO:
+                            desc_terms = ["Before Reforging", "After Reforging"]
+                            items = extract_items(
+                                cn.URL, [title_bar.find_next_sibling()], desc_terms
+                            )
+
+                            monster.reforge_info = ReforgeInfo(
+                                before_reforging=items[desc_terms[0]],
+                                after_reforging=items[desc_terms[1]],
+                            )
+
+                        case cn.HIDDEN_POTENTIAL:
+                            hidden_potential_table = title_bar.find_next_sibling()
+                            dts, dds = [i.get_text() for i in hidden_potential_table.select("dt")], [i.get_text() for i in hidden_potential_table.select("dd")]
+                            potential = {}
+
+                            for (dt, dd) in zip(dts, dds):
+                                potential[dt.lower().replace(" ", "_")] = dd
+
+                            monster.hidden_potential = HiddenPotential(**potential)
+
+                        case cn.AWAKENING_INFO:
+                            desc_terms = ["Before Awakening", "After Awakening"]
+                            items = extract_items(
+                                cn.URL,
+                                details_page_soup.select("dl.detail__reincarnation"),
+                                desc_terms,
+                            )
+
+                            monster.awakening_info = AwakeningInfo(
+                                before_awakening=items[desc_terms[0]],
+                                after_awakening=items[desc_terms[1]],
+                            )
+
+                            titles = details_page_soup.select("div.sp_evo_title")
+                            for title in titles:
+                                match title.text.strip():
+                                    case cn.AWAKENING_MATERIALS_GEAR:
+                                        gears = title.find_next_sibling().select("td:not(.no_boder)")
+                                        monster.materials_needed_gear = []
+
+                                        for element in gears:
+                                            gear_image, *overlay = element.select("img")
+                                            monster.materials_needed_gear.append(
+                                                Item(
+                                                    id=extract_id(  # pyright: ignore
+                                                        gear_image.get("data-src")
+                                                    ),
+                                                    name=element.select_one("p").get_text(),
+                                                    image=cn.URL.join(
+                                                        gear_image.get("data-src")
+                                                    ).route,
+                                                    element_overlay=None
+                                                    if len(overlay) <= 0
+                                                    else cn.URL.join(
+                                                        overlay[0].get("data-src")
+                                                    ).route,
+                                                )
+                                            )
+
+                                    case cn.AWAKENING_MATERIALS_ITEMS:
+                                        items = title.find_next_sibling().select("td:not(.no_boder)")
+                                        monster.materials_needed_item = []
+
+                                        for item in items:
+                                            monster.materials_needed_item.append(
+                                                Item(
+                                                    id=extract_id(  # pyright: ignore
+                                                        item.select_one("img").attrs["data-src"]
+                                                    ),
+                                                    name=item.select_one("p").get_text(),
+                                                    image=cn.URL.join(
+                                                        item.select_one("img").attrs["data-src"]
+                                                    ).route,
+                                                    element_overlay=None
+                                                    if len(overlay) <= 0
+                                                    else cn.URL.join(
+                                                        overlay[0].get("data-src")
+                                                    ).route,
+                                                )
+                                            )
+
+                        case cn.ENLIGHTENING_INFO:
+                            desc_terms = ["Before Enlightening", "After Enlightening"]
+                            items = extract_items(
+                                cn.URL,
+                                details_page_soup.select("dl.detail__reincarnation"),
+                                desc_terms,
+                            )
+
+                            monster.enlightening_info = EnlighteningInfo(
+                                before_enlightening=items[desc_terms[0]],
+                                after_enlightening=items[desc_terms[1]],
+                            )
+
+                            titles = details_page_soup.select("div.sp_evo_title")
+                            for title in titles:
+                                match title.text.strip():
+                                    case cn.AWAKENING_MATERIALS_GEAR:
+                                        gears = title.find_next_sibling().select("td:not(.no_boder)")
+                                        monster.materials_needed_gear = []
+
+                                        for element in gears:
+                                            gear_image, *overlay = element.select("img")
+                                            monster.materials_needed_gear.append(
+                                                Item(
+                                                    id=extract_id(  # pyright: ignore
+                                                        gear_image.get("data-src")
+                                                    ),
+                                                    name=element.select_one("p").get_text(),
+                                                    image=cn.URL.join(
+                                                        gear_image.get("data-src")
+                                                    ).route,
+                                                    element_overlay=None
+                                                    if len(overlay) <= 0
+                                                    else cn.URL.join(
+                                                        overlay[0].get("data-src")
+                                                    ).route,
+                                                )
+                                            )
+
+                                    case cn.AWAKENING_MATERIALS_ITEMS:
+                                        items = title.find_next_sibling().select("td:not(.no_boder)")
+                                        monster.materials_needed_item = []
+
+                                        for item in items:
+                                            monster.materials_needed_item.append(
+                                                Item(
+                                                    id=extract_id(  # pyright: ignore
+                                                        item.select_one("img").attrs["data-src"]
+                                                    ),
+                                                    name=item.select_one("p").get_text(),
+                                                    image=cn.URL.join(
+                                                        item.select_one("img").attrs["data-src"]
+                                                    ).route,
+                                                    element_overlay=None
+                                                    if len(overlay) <= 0
+                                                    else cn.URL.join(
+                                                        overlay[0].get("data-src")
+                                                    ).route,
+                                                )
+                                            )
+
+                monster_table.insert(Document(monster.asdict(), doc_id=monster.id))
+
 
 
 def main():

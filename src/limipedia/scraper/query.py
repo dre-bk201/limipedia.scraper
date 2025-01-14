@@ -1,6 +1,6 @@
 from limipedia.scraper.database import w_db
 from tinydb import Query, where
-from typing import Mapping 
+from typing import Mapping
 
 def contains(record: str, *values: str) -> bool:
     found = True
@@ -26,12 +26,14 @@ def main():
     Weapon = Query()
 
     # print(weapons_table.all()[0:10])
+    c = weapons_table.update({"enlightening_info": {}}, Weapon.enlightening_info.exists())
+    print(c)
 
-    for weapon in weapons_table.search(
-            Weapon.id == 1015064
-            # (Weapon.name.test(contains, "xeno", "spear")) &
-            # (Weapon.basic_info.gear_cost >= 42) &
-            # (Weapon.basic_info.gear_cost <= 45)
-        ):
-        # c: Document = weapon
-        print(weapon)
+    # for weapon in weapons_table.search(
+    #         Weapon.id == 1015064
+    #         # (Weapon.name.test(contains, "xeno", "spear")) &
+    #         # (Weapon.basic_info.gear_cost >= 42) &
+    #         # (Weapon.basic_info.gear_cost <= 45)
+    #     ):
+    #     # c: Document = weapon
+    #     print(weapon)
