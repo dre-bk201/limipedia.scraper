@@ -55,7 +55,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           if: startsWith(github.ref, 'refs/tags/')
-          tag_name: Limipedia v${{ steps.version.outputs.version }}
+          tag_name: Limipedia_v${{ steps.version.outputs.version }}
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             databases/weapons.json
