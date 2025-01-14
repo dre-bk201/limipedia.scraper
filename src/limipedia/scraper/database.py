@@ -51,7 +51,7 @@ def init_database():
             metadata.upsert(
                 Document(
                     Version(
-                        version="0.0.3",
+                        version="0.0.4",
                         description="initial scraping",
                         patch_date=str(datetime.now()),
                     ).asdict(),
