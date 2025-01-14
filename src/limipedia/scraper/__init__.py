@@ -31,7 +31,7 @@ class Scraper:
         for route in rarity_routes:
             # for route in rarity_routes:
             soup = soupify(cn.URL.join(route).route, endpoint="weapons")
-            for td_a in soup.select("td a"):
+            for td_a in soup.select("td a")[:5]:
                 wpn, basic_info, stats = Weapon(), {}, defaultdict(list)
                 thumbnail, *ele_overlay = td_a.select("img")
 
@@ -246,7 +246,7 @@ class Scraper:
         for route in rarity_routes[:]:
             soup = soupify(cn.URL.join(route).route, endpoint="defgears")
 
-            for td_a in soup.select("td a")[:]:
+            for td_a in soup.select("td a")[:5]:
                 defgear, basic_info, stats = Defgear(), {}, defaultdict(list)
                 thumbnail, *ele_overlay = td_a.select("img")
 
@@ -433,7 +433,7 @@ class Scraper:
         for route in rarity_routes:
             soup = soupify(cn.URL.join(route).route, endpoint="monsters")
 
-            for td_a in soup.select("td a"):
+            for td_a in soup.select("td a")[:5]:
                 monster, basic_info, stats = Monster(), {}, defaultdict(list)
                 thumbnail, *ele_overlay = td_a.select("img")
 
