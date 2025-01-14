@@ -34,8 +34,11 @@ jobs:
         run: |
           git add --force pages
           git commit -m "update: caching additional pages"
-          git restore .
-          git push
+
+      - name: Push Changes to github
+          run: |
+            git restore databases
+            git push
 
       - name: Read version number
         id: version
