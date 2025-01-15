@@ -49,7 +49,7 @@ jobs:
 
       - name: Create tag name label
         id: tag_name
-        run: echo "tag_name=$(python -c "from datetime import datetime; print(%a-%B-%Y)")" >> $GITHUB_OUTPUT
+        run: echo "tag_name=$(python -c "from datetime import datetime; print(datetime.now().strftime('%a-%B-%Y'))")" >> $GITHUB_OUTPUT
 
       - name: Create Release
         id: create_release
