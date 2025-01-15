@@ -12,10 +12,9 @@ timeouts = [1, 4, 2, 3, 6, 8, 9, 7]
 class Scraper:
     def __init__(self):
         init_database()
-        bump_version("monsters")
-        # self._weapons()
-        # self._defgears()
-        # self._monsters()
+        self._weapons()
+        self._defgears()
+        self._monsters()
         # self._abilities()
         # self._furnitures()
 
