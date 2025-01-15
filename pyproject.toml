@@ -14,6 +14,7 @@ dependencies = [
     "tinydb-smartcache>=2.0.0",
     "black>=24.10.0",
     "requests>=2.32.3",
+    "semver>=3.0.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

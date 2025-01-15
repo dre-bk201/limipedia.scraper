@@ -1,4 +1,5 @@
 import requests
+import semver
 
 from tinydb import TinyDB, where
 from tinydb.database import Document
@@ -23,6 +24,21 @@ class Version:
     description: str
     patch_date: str
 
+def bump_version(db_name: str):
+    global databases
+    
+    metadata_table = databases[db_name].table("metadata")
+    version = semver.Version.parse(metadata_table.get(where("version").exists())["version"])
+
+    if version.patch <= 20:
+        metadata_table.upsert(
+            { "version": str(version.bump_patch()) }, 
+            where("version") == str(version)
+        )
+    else:
+        version.patch(0)
+        metadata_table.upsert({"version": str(version.bump_minor())}, where("version") == str(version))
+
 
 def init_database():
     global databases
@@ -30,28 +46,28 @@ def init_database():
     latest_release = "https://github.com/dre-bk201/limipedia.scraper/releases/latest/download/{}.json"
     database_names = ["weapons", "monsters", "defgears", "abilities", "furniture"]
 
-    for db_name in database_names:
-        try:
-            response = requests.get(latest_release.format(db_name))
-            if response.status_code != 200: raise Exception("Request Error")
-            with open(f"databases/{db_name}.json", "wb") as f:
-                f.write(response.content)
-        except Exception as _:
-            f = open(f"databases/{db_name}.json", "wb")
-            f.close()
-
+    # for db_name in database_names:
+    #     try:
+    #         response = requests.get(latest_release.format(db_name))
+    #         if response.status_code != 200: raise Exception("Request Error")
+    #         with open(f"databases/{db_name}.json", "wb") as f:
+    #             f.write(response.content)
+    #     except Exception as _:
+    #         f = open(f"databases/{db_name}.json", "wb")
+    #         f.close()
 
     for database in databases.values():
         if True:
             # with database as db:
             metadata = database.table("metadata")
-            # if metadata.get(where("version").exists()):
-            #     continue
+            print(metadata.get(where("version").exists()))
+            if metadata.get(where("version").exists()):
+                continue
 
-            metadata.upsert(
+            metadata.insert(
                 Document(
                     Version(
-                        version="0.0.4",
+                        version="0.0.1",
                         description="initial scraping",
                         patch_date=str(datetime.now()),
                     ).asdict(),

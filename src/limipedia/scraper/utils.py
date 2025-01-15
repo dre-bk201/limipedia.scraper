@@ -45,7 +45,7 @@ class Route:
 
 def soupify(url: str, endpoint: str = "", name: Optional[str] = None) -> BeautifulSoup:
     content: bytes
-    name = name.replace('"', "'", 10).replace("?", "", 10) if name else name
+    name = name.replace('"', "'", 10).replace("?", "", 10).replace(":", "", 10) if name else name
     path = Path(f"pages/{endpoint}/{name or extract_id(url)}.html")
 
     if not path.exists():

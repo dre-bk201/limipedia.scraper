@@ -69,6 +69,8 @@ py-cpuinfo==9.0.0
     # via blosc2
 requests==2.32.3
     # via limipedia
+semver==3.0.2
+    # via limipedia
 sniffio==1.3.1
     # via anyio
 soupsieve==2.6

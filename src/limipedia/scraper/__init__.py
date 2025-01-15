@@ -12,9 +12,10 @@ timeouts = [1, 4, 2, 3, 6, 8, 9, 7]
 class Scraper:
     def __init__(self):
         init_database()
-        self._weapons()
-        self._defgears()
-        self._monsters()
+        bump_version("monsters")
+        # self._weapons()
+        # self._defgears()
+        # self._monsters()
         # self._abilities()
         # self._furnitures()
 
@@ -56,7 +57,6 @@ class Scraper:
                 details_page_soup = soupify(
                     cn.URL.join(td_a.get("href")).route,
                     endpoint="weapons",
-                    name=f"{wpn.name}-{wpn.id}",
                 )
                 # details_page_soup = soupify("https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/1015157.html", endpoint="weapons", name=f"Absolute Xenoblade-1015157")
                 # details_page_soup = BeautifulSoup(httpx.get("https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/1025015.html").text, 'lxml')
@@ -231,6 +231,7 @@ class Scraper:
                                 )
 
                 weapons_table.insert(Document(wpn.asdict(), doc_id=wpn.id))
+                bump_version("weapons")
 
     def _defgears(self):
         rarity_routes = [
@@ -412,6 +413,7 @@ class Scraper:
                                 )
                 # print(defgear)
                 defgears_table.insert(Document(defgear.asdict(), doc_id=defgear.id))
+                bump_version("defgears")
 
     def _abilities(self):
         pass
@@ -457,7 +459,6 @@ class Scraper:
                 details_page_soup = soupify(
                     cn.URL.join(td_a.get("href")).route,
                     endpoint="monsters",
-                    name=f"{monster.name}-{monster.id}",
                 )
 
                 # details_page_soup = soupify(
@@ -704,6 +705,7 @@ class Scraper:
                                             )
 
                 monster_table.insert(Document(monster.asdict(), doc_id=monster.id))
+                bump_version("monsters")
 
 
 
