@@ -43,13 +43,13 @@ jobs:
 
       - name: Create Release timestamp
         id: timestamp
-        run: echo "timestamp=$(python -c "from datetime import datetime ; print(datetime.now().strftime('%a-%B-%Y_%H:%M:%S'))")" >> $GITHUB_OUTPUT
+        run: echo "timestamp=$(python gen_timestamp.py)" >> $GITHUB_OUTPUT
         # run: echo "version=$(python -c "import json; print(json.load(open('databases/weapons.json'))['metadata']['1']['version'])")" >> $GITHUB_OUTPUT
         #
 
-      - name: Create tag name label
-        id: tag_name
-        run: echo "tag_name=$(python -c "from datetime import datetime; print(datetime.now().strftime('%a-%B-%Y_%H-%M-%S'))")" >> $GITHUB_OUTPUT
+      # - name: Create tag name label
+      #   id: tag_name
+      #   run: echo "tag_name=$(python -c "from datetime import datetime; print(datetime.now().strftime('%a-%B-%Y_%H-%M-%S'))")" >> $GITHUB_OUTPUT
 
       - name: Create Release
         id: create_release
@@ -66,7 +66,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           if: startsWith(github.ref, 'refs/tags/')
-          tag_name: Limipedia_${{ steps.tag_name.outputs.tag_name }}
+          tag_name: Limipedia_v${{ steps.tag_name.outputs.tag_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             databases/weapons.json

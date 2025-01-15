@@ -15,8 +15,8 @@ class Scraper:
         self._weapons()
         self._defgears()
         self._monsters()
-        # self._abilities()
-        # self._furnitures()
+        self._abilities()
+        self._furnitures()
 
     def _weapons(self):
         rarity_routes = [
