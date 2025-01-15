@@ -30,8 +30,10 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-      - name: Discard changes in databases/
-        run: git restore --staged databases && git checkout -- databases
+      # - name: Discard changes in databases/
+      #   run: git restore --staged databases && git checkout -- databases
+      # - name: Reset uncommitted changes in databases/
+      #   run: git checkout -- databases
 
       - name: Commit updated files
         run: |
@@ -51,18 +53,18 @@ jobs:
       #   id: tag_name
       #   run: echo "tag_name=$(python -c "from datetime import datetime; print(datetime.now().strftime('%a-%B-%Y_%H-%M-%S'))")" >> $GITHUB_OUTPUT
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.timestamp.outputs.timestamp }}
-          release_name: Limipieda Release ${{ steps.timestamp.outputs.timestamp }}
-          draft: false
-          prerelease: false
+      # - name: Create Release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: v${{ steps.timestamp.outputs.timestamp }}
+      #     # release_name: Limipieda Release ${{ steps.timestamp.outputs.timestamp }}
+      #     draft: false
+      #     prerelease: false
 
-      - name: Assets release
+      - name: Generate assets release
         uses: softprops/action-gh-release@v2
         with:
           if: startsWith(github.ref, 'refs/tags/')
