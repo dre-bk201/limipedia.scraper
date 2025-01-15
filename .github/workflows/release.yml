@@ -41,10 +41,15 @@ jobs:
       - name: Push Changes to GitHub
         run: git push
 
-      - name: Read timestamp
+      - name: Create Release timestamp
         id: timestamp
-        run: echo "timestamp=$(python -c "from datetime import datetime ; print(datetime.now().strftime('%d/%m/%Y_%H:%M:%S'))")" >> $GITHUB_OUTPUT
+        run: echo "timestamp=$(python -c "from datetime import datetime ; print(datetime.now().strftime('%a-%B-%Y_%H:%M:%S'))")" >> $GITHUB_OUTPUT
         # run: echo "version=$(python -c "import json; print(json.load(open('databases/weapons.json'))['metadata']['1']['version'])")" >> $GITHUB_OUTPUT
+        #
+
+      - name: Create tag name label
+        id: tag_name
+        run: echo "tag_name=$(python -c "from datetime import datetime; print(%a-%B-%Y)")" >> $GITHUB_OUTPUT
 
       - name: Create Release
         id: create_release
@@ -53,7 +58,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ steps.version.outputs.version }}
-          release_name: Release ${{ steps.timestamp.outputs.timestamp }}
+          release_name: Limipieda Release ${{ steps.timestamp.outputs.timestamp }}
           draft: false
           prerelease: false
 
@@ -61,7 +66,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           if: startsWith(github.ref, 'refs/tags/')
-          tag_name: Limipedia_${{ steps.timestamp.outputs.timestamp }}
+          tag_name: Limipedia_${{ steps.tag_name.outputs.tag_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             databases/weapons.json
