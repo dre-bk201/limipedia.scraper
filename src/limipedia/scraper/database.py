@@ -36,7 +36,7 @@ def bump_version(db_name: str):
             where("version") == str(version)
         )
     else:
-        version.patch(0)
+        version.replace(patch=0)
         metadata_table.upsert({"version": str(version.bump_minor())}, where("version") == str(version))
 
 
