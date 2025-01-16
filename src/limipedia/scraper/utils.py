@@ -1,4 +1,4 @@
-import pprint, httpx
+import pprint
 import minify_html_onepass as minify_html
 
 from typing import Any, Union, List, Optional, Self
@@ -6,6 +6,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from bs4 import Tag, BeautifulSoup
+import requests
 from limipedia.scraper.models import Item, dataclass
 
 
@@ -50,11 +51,12 @@ def soupify(url: str, endpoint: str = "", name: Optional[str] = None) -> Beautif
     path = Path(f"pages/{endpoint}/{name or extract_id(url)}.html")
 
     if not path.exists():
-        content = httpx.get(url).text
-        with open(path, "w",encoding="utf-8") as f:
-            f.write(minify_html.minify(content,  minify_js=True, minify_css=True))
+        content = requests.get(url).text
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content)
     else:
-        with open(path, "r",encoding="utf-8") as f:
+        print("[CACHED] ", end="") # better debugging
+        with open(path, "r", encoding="utf-8") as f:
             content = f.read()
 
     return BeautifulSoup(content, "lxml")

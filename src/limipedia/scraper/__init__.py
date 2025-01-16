@@ -29,7 +29,6 @@ class Scraper:
         weapons_table = databases["weapons"].table("weapons")
 
         for route in rarity_routes:
-            # for route in rarity_routes:
             soup = soupify(cn.URL.join(route).route, endpoint="weapons")
             for td_a in soup.select("td a")[:]:
                 wpn, basic_info, stats = Weapon(), {}, defaultdict(list)
@@ -50,18 +49,10 @@ class Scraper:
                     print(f"[STATUS]: found {wpn.name}, skipping...")
                     continue
 
-                # shuffle(timeouts)
-                # time.sleep(timeouts[0])
-
                 details_page_soup = soupify(
                     cn.URL.join(td_a.get("href")).route,
                     endpoint="weapons",
                 )
-                # details_page_soup = soupify("https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/1015157.html", endpoint="weapons", name=f"Absolute Xenoblade-1015157")
-                # details_page_soup = BeautifulSoup(httpx.get("https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/1025015.html").text, 'lxml')
-                # details_page_soup = BeautifulSoup(httpx.get("https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/1015091.html").text, 'lxml')
-
-                # wpn.name = details_page_soup.select_one("p.name__text").get_text()
                 wpn.image = cn.URL.join(
                     details_page_soup.select_one(".detail__img-block > img").attrs[
                         "data-src"
@@ -408,7 +399,6 @@ class Scraper:
                                         ).route,
                                     )
                                 )
-                # print(defgear)
                 defgears_table.insert(Document(defgear.asdict(), doc_id=defgear.id))
         bump_version("defgears")
 
@@ -457,31 +447,6 @@ class Scraper:
                     cn.URL.join(td_a.get("href")).route,
                     endpoint="monsters",
                 )
-
-                # details_page_soup = soupify(
-                #     "https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/1916106.html",
-                #     endpoint="monsters",
-                # )
-
-                # details_page_soup = soupify(
-                #     "https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/4415110.html",
-                #     endpoint="monsters",
-                # )
-
-                # details_page_soup = soupify(
-                #     "https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/4415002.html",
-                #     endpoint="monsters",
-                # )
-
-                # details_page_soup = soupify(
-                #     "https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/4415316.html",
-                #     endpoint="monsters",
-                # )
-
-                # details_page_soup = soupify(
-                #     "https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/4415019.html",
-                #     endpoint="monsters",
-                # )
 
                 monster.image = cn.URL.join(
                     details_page_soup.select_one(".detail__img-block > img").attrs[
