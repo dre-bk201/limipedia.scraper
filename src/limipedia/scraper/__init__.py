@@ -229,7 +229,7 @@ class Scraper:
                                 )
 
                 weapons_table.insert(Document(wpn.asdict(), doc_id=wpn.id))
-                bump_version("weapons")
+        bump_version("weapons")
 
     def _defgears(self):
         rarity_routes = [
@@ -410,7 +410,7 @@ class Scraper:
                                 )
                 # print(defgear)
                 defgears_table.insert(Document(defgear.asdict(), doc_id=defgear.id))
-                bump_version("defgears")
+        bump_version("defgears")
 
     def _abilities(self):
         pass
@@ -702,7 +702,7 @@ class Scraper:
                                             )
 
                 monster_table.insert(Document(monster.asdict(), doc_id=monster.id))
-                bump_version("monsters")
+        bump_version("monsters")
 
 
 
