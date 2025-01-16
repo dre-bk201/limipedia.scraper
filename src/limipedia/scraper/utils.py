@@ -1,4 +1,5 @@
 import pprint, httpx
+import minify_html_onepass as minify_html
 
 from typing import Any, Union, List, Optional, Self
 from collections import defaultdict
@@ -44,17 +45,18 @@ class Route:
 
 
 def soupify(url: str, endpoint: str = "", name: Optional[str] = None) -> BeautifulSoup:
-    content: bytes
+    content: str
     name = name.replace('"', "'", 10).replace("?", "", 10).replace(":", "", 10) if name else name
     path = Path(f"pages/{endpoint}/{name or extract_id(url)}.html")
 
     if not path.exists():
-        content = httpx.get(url).content
-        with open(path, "wb") as f:
-            f.write(httpx.get(url).content)
+        content = httpx.get(url).text
+        with open(path, "w",encoding="utf-8") as f:
+            f.write(minify_html.minify(content,  minify_js=True, minify_css=True))
     else:
-        with open(path, "rb") as f:
+        with open(path, "r",encoding="utf-8") as f:
             content = f.read()
+
     return BeautifulSoup(content, "lxml")
 
 
