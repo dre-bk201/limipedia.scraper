@@ -47,7 +47,7 @@ class Scraper:
                 # checks if gear exists in database, and skips if found
                 matches = weapons_table.search(where("id") == wpn.id)
                 if len(matches) > 0:
-                    print(f"[STATUS]: found {wpn.id}, skipping...")
+                    print(f"[STATUS]: found {wpn.name}, skipping...")
                     continue
 
                 # shuffle(timeouts)
@@ -262,7 +262,7 @@ class Scraper:
                 # checks if gear exists in database, and skips if found
                 matches = defgears_table.search(where("id") == defgear.id)
                 if len(matches) > 0:
-                    print(f"[STATUS]: found {defgear.id}, skipping...")
+                    print(f"[STATUS]: found {defgear.name}, skipping...")
                     continue
 
                 details_page_soup = soupify(cn.URL.join(td_a.get("href")).route, endpoint="defgears")
