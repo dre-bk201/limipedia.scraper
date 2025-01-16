@@ -162,7 +162,6 @@ class Scraper:
                                 match title.text.strip():
                                     case cn.AWAKENING_MATERIALS_GEAR:
                                         content = title.find_next_sibling().select("td:not(.no_boder)")
-                                        print("len: ", len(content))
                                         wpn.awakening_gears = []
 
                                         for element in content:
@@ -344,7 +343,6 @@ class Scraper:
                                 match title.text.strip():
                                     case cn.AWAKENING_MATERIALS_GEAR:
                                         content = title.find_next_sibling().select("td:not(.no_boder)")
-                                        print("len: ", len(content))
                                         defgear.awakening_gears = []
 
                                         for element in content:
@@ -429,7 +427,7 @@ class Scraper:
             "/en/equip_list/4_5.html",
         ]
 
-        monster_table =  databases["monsters"]
+        monster_table =  databases["monsters"].table("monsters")
 
         for route in rarity_routes:
             soup = soupify(cn.URL.join(route).route, endpoint="monsters")
