@@ -38,3 +38,5 @@ packages = ["src/limipedia"]
 scrape = "limipedia.scraper:main"
 query = "limipedia.scraper.query:main"
 scratch = "limipedia.scraper.scratch:main"
+update_db = "limipedia.scraper.database:init_database"
+cache = "limipedia.cacher:main"
