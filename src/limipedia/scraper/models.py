@@ -85,7 +85,7 @@ class Weapon:
     reforge_materials: Optional[List[Item]] = None
     awakening_info: Optional[AwakeningInfo] = None
     awakening_gears: Optional[List[Item]] = None
-    awakening_items: Optional[AwakeningInfo] = None
+    awakening_items: Optional[List[Item]] = None
 
 
 @dataclass
@@ -102,7 +102,7 @@ class Defgear:
     reforge_materials: Optional[List[Item]] = None
     awakening_info: Optional[AwakeningInfo] = None
     awakening_gears: Optional[List[Item]] = None
-    awakening_items: Optional[AwakeningInfo] = None
+    awakening_items: Optional[List[Item]] = None
 
 
 @dataclass
