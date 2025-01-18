@@ -23,8 +23,6 @@ def getFromDict(dataDict, mapList, default=None):
 
 
 def cache(directory: Path, url: str):
-    r = requests.get(url)
-
     filename = url.split("/")[-1:][0]
     pathname = directory.joinpath(filename)
 
@@ -36,6 +34,7 @@ def cache(directory: Path, url: str):
     except FileExistsError as e:
         pass
 
+    r = requests.get(url)
     with open(pathname, "wb") as f:
         f.write(r.content)
 
@@ -44,7 +43,11 @@ def cache(directory: Path, url: str):
 
 def main():
     cache_dir = Path("cache")
-    table_names = ["weapons", "monsters", "defgears"]
+    table_names = [
+        "weapons", 
+        "monsters", 
+        "defgears"
+    ]
 
     cache_fields = {
         "monsters": [
@@ -93,7 +96,7 @@ def main():
     for table_name in table_names:
         database = databases[table_name].table(table_name)
 
-        for gear in database.all()[:450]:
+        for gear in database.all()[:]:
             print(f"[CACHING]: {gear.get("name")}")
             for field in cache_fields[table_name]:
                 obj = getFromDict(gear, field.split("."))
