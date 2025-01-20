@@ -428,10 +428,10 @@ class Scraper:
 
         monster_table =  databases["monsters"].table("monsters")
 
-        for route in rarity_routes:
+        for route in rarity_routes[:1]:
             soup = soupify(cn.URL.join(route).route, endpoint="monsters")
 
-            for td_a in soup.select("td a"):
+            for td_a in soup.select("td a")[:1]:
                 monster, basic_info, stats = Monster(), {}, defaultdict(list)
                 thumbnail, *ele_overlay = td_a.select("img")
 
@@ -453,7 +453,8 @@ class Scraper:
                 # details_page_soup = soupify(cn.URL.join(td_a.get("href")).route)
 
                 details_page_soup = soupify(
-                    cn.URL.join(td_a.get("href")).route,
+                    # cn.URL.join(td_a.get("href")).route,
+                    "https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/4445384.html",
                     endpoint="monsters",
                 )
 
@@ -567,6 +568,12 @@ class Scraper:
 
                             for (dt, dd) in zip(dts, dds):
                                 potential[dt.lower().replace(" ", "_")] = dd
+
+                            restrictions_table = title_bar.find_next_siblings()
+                            r = restrictions_table[1].select_one("dd")
+                            if r:
+                                potential["restrictions"] = r.get_text()
+
 
                             monster.hidden_potential = HiddenPotential(**potential)
 
@@ -715,7 +722,8 @@ class Scraper:
                                                 )
                                             )
 
-                monster_table.upsert(Document(monster.asdict(), doc_id=monster.id))
+                print(monster.hidden_potential)
+                # monster_table.upsert(Document(monster.asdict(), doc_id=monster.id))
         bump_version("monsters")
 
 
