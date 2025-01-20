@@ -154,7 +154,9 @@ class Monster:
     element_overlay_img: Optional[str] = None
     basic_info: MonsterBasicInfo = field(default_factory=dict)
     stats: Union[MonsterStats, Stats] = field(default_factory=dict)
-    skill: Skill = field(default_factory=dict)
+    skill: Optional[Skill] = None
+    skill_1: Optional[Skill] = None
+    skill_2: Optional[Skill] = None
     burst_skills: Optional[Skill] = None
     hidden_potential: Optional[HiddenPotential] = None
     passive_skill: Optional[Skill] = None
@@ -164,4 +166,3 @@ class Monster:
     awakening_info: Optional[AwakeningInfo] = None
     materials_needed_gear: Optional[List[Item]] = None
     materials_needed_item: Optional[List[Item]] = None
-# in-15307756

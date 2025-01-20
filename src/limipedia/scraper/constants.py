@@ -14,6 +14,8 @@ class Constants:
     ENLIGHTENING_INFO = "Enlightening Info"
     PASSIVE_SKILL = "Passive Skill"
     BURST_SKILLS = "Burst Skills"
+    SKILL_1 = "Skill #1"
+    SKILL_2 = "Skill #2"
 
     HIDDEN_POTENTIAL = "Hidden Potential"
     URL = Route("https://jam-capture-unisonleague-ww.ateamid.com")

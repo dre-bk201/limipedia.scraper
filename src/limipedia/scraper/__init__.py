@@ -422,7 +422,7 @@ class Scraper:
         for route in rarity_routes:
             soup = soupify(cn.URL.join(route).route, endpoint="monsters")
 
-            for td_a in soup.select("td a")[:]:
+            for td_a in soup.select("td a"):
                 monster, basic_info, stats = Monster(), {}, defaultdict(list)
                 thumbnail, *ele_overlay = td_a.select("img")
 
@@ -506,6 +506,23 @@ class Scraper:
                                 name=name.get_text(),
                                 effect=effect.get_text()
                             )
+
+                        case cn.SKILL_1:
+                            skill_table = title_bar.find_next_sibling()
+                            name, effect = skill_table.select("dd")
+                            monster.skill_1 = Skill(
+                                name=name.get_text(),
+                                effect=effect.get_text()
+                            )
+                            
+                        case cn.SKILL_2:
+                            skill_table = title_bar.find_next_sibling()
+                            name, effect = skill_table.select("dd")
+                            monster.skill_2 = Skill(
+                                name=name.get_text(),
+                                effect=effect.get_text()
+                            )
+
 
                         case cn.PASSIVE_SKILL:
                             skill_table = title_bar.find_next_sibling()
@@ -604,6 +621,29 @@ class Scraper:
                                                     ).route,
                                                 )
                                             )
+
+                        case cn.REFORGE_MATERIALS:
+                            items = title_bar.find_next_sibling().select("dd")
+                            monster.reforge_materials = []
+
+                            for item in items:
+                                gear_image, *overlay = item.select("img")
+                                monster.reforge_materials.append(
+                                    Item(
+                                        id=extract_id( # pyright: ignore
+                                            item.select_one("a").attrs["href"]
+                                        ),
+                                        name=item.select_one("p").get_text(),
+                                        image=cn.URL.join(
+                                            gear_image.get("data-src")
+                                        ).route,
+                                        element_overlay=None
+                                        if len(overlay) <= 0
+                                        else cn.URL.join(
+                                            overlay[0].get("data-src")
+                                        ).route,
+                                    )
+                                )
 
                         case cn.ENLIGHTENING_INFO:
                             desc_terms = ["Before Enlightening", "After Enlightening"]

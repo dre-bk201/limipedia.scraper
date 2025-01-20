@@ -1,4 +1,4 @@
-from limipedia.scraper.database import w_db
+from limipedia.scraper.database import databases
 from tinydb import Query, where
 from typing import Mapping
 
@@ -15,7 +15,7 @@ def startswith(record: str, value: str) -> bool:
 
 
 def main():
-    weapons_table = w_db.table("weapons")
+    weapons_table = databases["weapons"].table("weapons")
     # print(weapons_table.search(~(Weapon.id == "1015005")))
     # print(weapons_table.search(Weapon.id.exists()))
 
