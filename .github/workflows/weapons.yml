@@ -1,4 +1,5 @@
-name: Scrape Gears (No Upsert)
+
+name: Rescrape Weapons (Upsert)
 
 on:
   workflow_dispatch:
@@ -23,7 +24,7 @@ jobs:
         uses: eifinger/setup-rye@v4
 
       - name: Run version update script
-        run: rye sync && rye run scrape -- all
+        run: rye sync && rye run scrape -- weapons rescrape
 
       - name: Configure Git
         run: |

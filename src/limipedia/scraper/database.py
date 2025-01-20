@@ -24,6 +24,13 @@ class Version:
     description: str
     patch_date: str
 
+def get_version(db_name: str):
+    global databases
+    metadata_table = databases[db_name].table("metadata")
+    version: Version = metadata_table.get(where("version").exists())
+
+    return version.get("version") if version else "0.0.1"
+
 def bump_version(db_name: str):
     global databases
 
@@ -56,12 +63,22 @@ def init_database():
             f = open(f"databases/{db_name}.json", "wb")
             f.close()
 
-    for database in databases.values():
+    for name, database in databases.items():
         if True:
             # with database as db:
             metadata = database.table("metadata")
-            print(metadata.get(where("version").exists()))
+            
             if metadata.get(where("version").exists()):
+                metadata.upsert(
+                    Document(
+                        Version(
+                            version=get_version(name),
+                            description="updating database",
+                            patch_date=str(datetime.now()),
+                        ).asdict(),
+                        doc_id=1,
+                    ),
+                )
                 continue
 
             metadata.insert(

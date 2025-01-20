@@ -10,15 +10,23 @@ from limipedia.scraper.database import *
 timeouts = [1, 4, 2, 3, 6, 8, 9, 7]
 
 class Scraper:
-    def __init__(self):
+    def __init__(self, args: List[str]):
         init_database()
-        self._weapons()
-        self._defgears()
-        self._monsters()
-        self._abilities()
-        self._furnitures()
 
-    def _weapons(self):
+        for arg in args:
+            match arg:
+                case "monsters" | "all":
+                    self._monsters("rescrape" in args)
+                case "defgears" | "all":
+                    self._defgears("rescrape" in args)
+                case "weapons" | "all":
+                    self._weapons("rescrape" in args)
+                case "abilities" | "all":
+                    self._abilities("rescrape" in args)
+                case "furniture" | "all":
+                    self._furniture("rescrape" in args)
+
+    def _weapons(self, rescrape: bool):
         rarity_routes = [
             "/en/equip_list/1_2.html",
             "/en/equip_list/1_5.html",
@@ -45,7 +53,7 @@ class Scraper:
 
                 # checks if gear exists in database, and skips if found
                 matches = weapons_table.search(where("id") == wpn.id)
-                if len(matches) > 0:
+                if len(matches) > 0 and not rescrape:
                     print(f"[STATUS]: found {wpn.name}, skipping...")
                     continue
 
@@ -219,10 +227,10 @@ class Scraper:
                                     )
                                 )
 
-                weapons_table.insert(Document(wpn.asdict(), doc_id=wpn.id))
+                weapons_table.upsert(Document(wpn.asdict(), doc_id=wpn.id))
         bump_version("weapons")
 
-    def _defgears(self):
+    def _defgears(self, rescrape: bool):
         rarity_routes = [
             "/en/equip_list/23_5.html",
             "/en/equip_list/23_1.html",
@@ -251,7 +259,7 @@ class Scraper:
 
                 # checks if gear exists in database, and skips if found
                 matches = defgears_table.search(where("id") == defgear.id)
-                if len(matches) > 0:
+                if len(matches) > 0 and not rescrape:
                     print(f"[STATUS]: found {defgear.name}, skipping...")
                     continue
 
@@ -399,16 +407,17 @@ class Scraper:
                                         ).route,
                                     )
                                 )
-                defgears_table.insert(Document(defgear.asdict(), doc_id=defgear.id))
+                defgears_table.upsert(Document(defgear.asdict(), doc_id=defgear.id))
         bump_version("defgears")
 
-    def _abilities(self):
+    def _abilities(self, rescrape: bool):
         pass
 
-    def _furnitures(self):
+    def _furniture(self, rescrape: bool):
         pass
 
-    def _monsters(self):
+    def _monsters(self, rescrape: bool):
+        print(rescrape)
         rarity_routes = [
             "/en/equip_list/4_1.html",
             "/en/equip_list/4_2.html",
@@ -437,7 +446,7 @@ class Scraper:
 
                 # checks if gear exists in database, and skips if found
                 matches = monster_table.search(where("id") == monster.id)
-                if len(matches) > 0:
+                if len(matches) > 0 and not rescrape:
                     print(f"[STATUS]: found {monster.name}, skipping...")
                     continue
 
@@ -706,10 +715,12 @@ class Scraper:
                                                 )
                                             )
 
-                monster_table.insert(Document(monster.asdict(), doc_id=monster.id))
+                monster_table.upsert(Document(monster.asdict(), doc_id=monster.id))
         bump_version("monsters")
 
 
 
 def main():
-    scraper = Scraper()
+    import sys
+    _, *args = sys.argv
+    Scraper(args)
