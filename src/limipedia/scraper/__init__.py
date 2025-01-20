@@ -721,8 +721,7 @@ class Scraper:
                                                 )
                                             )
 
-                print(monster.hidden_potential)
-                # monster_table.upsert(Document(monster.asdict(), doc_id=monster.id))
+                monster_table.upsert(Document(monster.asdict(), doc_id=monster.id))
         bump_version("monsters")
 
 
