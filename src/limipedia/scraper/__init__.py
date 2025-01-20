@@ -428,10 +428,10 @@ class Scraper:
 
         monster_table =  databases["monsters"].table("monsters")
 
-        for route in rarity_routes[:1]:
+        for route in rarity_routes[:]:
             soup = soupify(cn.URL.join(route).route, endpoint="monsters")
 
-            for td_a in soup.select("td a")[:1]:
+            for td_a in soup.select("td a")[:]:
                 monster, basic_info, stats = Monster(), {}, defaultdict(list)
                 thumbnail, *ele_overlay = td_a.select("img")
 
@@ -453,8 +453,7 @@ class Scraper:
                 # details_page_soup = soupify(cn.URL.join(td_a.get("href")).route)
 
                 details_page_soup = soupify(
-                    # cn.URL.join(td_a.get("href")).route,
-                    "https://jam-capture-unisonleague-ww.ateamid.com/en/equip_detail/4445384.html",
+                    cn.URL.join(td_a.get("href")).route,
                     endpoint="monsters",
                 )
 
