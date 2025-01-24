@@ -11,19 +11,27 @@ timeouts = [1, 4, 2, 3, 6, 8, 9, 7]
 
 class Scraper:
     def __init__(self, args: List[str]):
-        init_database()
+        if "no" not in args:
+            init_database()
 
         for arg in args:
             match arg:
-                case "monsters" | "all":
+                case "all":
                     self._monsters("rescrape" in args)
-                case "defgears" | "all":
-                    self._defgears("rescrape" in args)
-                case "weapons" | "all":
                     self._weapons("rescrape" in args)
-                case "abilities" | "all":
+                    self._defgears("rescrape" in args)
                     self._abilities("rescrape" in args)
-                case "furniture" | "all":
+                    self._furniture("rescrape" in args)
+
+                case "monsters":
+                    self._monsters("rescrape" in args)
+                case "defgears":
+                    self._defgears("rescrape" in args)
+                case "weapons":
+                    self._weapons("rescrape" in args)
+                case "abilities":
+                    self._abilities("rescrape" in args)
+                case "furniture":
                     self._furniture("rescrape" in args)
 
     def _weapons(self, rescrape: bool):
@@ -50,6 +58,10 @@ class Scraper:
                     if len(ele_overlay) > 0
                     else None
                 )
+
+                if "Zhurong" in wpn.name:
+                    print(wpn.name)
+                continue
 
                 # checks if gear exists in database, and skips if found
                 matches = weapons_table.search(where("id") == wpn.id)
