@@ -32,7 +32,7 @@ jobs:
 
       - name: Commit updated files
         run: |
-          git add --force pages
+          git add pages
           git commit -m "update: caching additional pages" || echo "No changes to commit"
 
       - name: Push Changes to GitHub
