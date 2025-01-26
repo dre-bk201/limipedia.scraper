@@ -59,10 +59,6 @@ class Scraper:
                     else None
                 )
 
-                if "Zhurong" in wpn.name:
-                    print(wpn.name)
-                continue
-
                 # checks if gear exists in database, and skips if found
                 matches = weapons_table.search(where("id") == wpn.id)
                 if len(matches) > 0 and not rescrape:
@@ -429,7 +425,6 @@ class Scraper:
         pass
 
     def _monsters(self, rescrape: bool):
-        print(rescrape)
         rarity_routes = [
             "/en/equip_list/4_1.html",
             "/en/equip_list/4_2.html",
@@ -535,7 +530,7 @@ class Scraper:
                                 name=name.get_text(),
                                 effect=effect.get_text()
                             )
-                            
+
                         case cn.SKILL_2:
                             skill_table = title_bar.find_next_sibling()
                             name, effect = skill_table.select("dd")
