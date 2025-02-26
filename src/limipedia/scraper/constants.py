@@ -19,3 +19,7 @@ class Constants:
 
     HIDDEN_POTENTIAL = "Hidden Potential"
     URL = Route("https://jam-capture-unisonleague-ww.ateamid.com")
+
+    SUB_EFFECT = "Sub Effect"
+
+    METHOD_LEARNED = "Method Learned"

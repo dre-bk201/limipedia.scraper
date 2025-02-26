@@ -45,6 +45,22 @@ class Route:
         return self.route
 
 
+def get_class(class_name: str):
+    classes = {
+        "class_100": "Soldier",
+        "class_200": "Lancer",
+        "class_300": "Archer",
+        "class_400": "Mage",
+        "class_500": "Cleric",
+        "class_600": "Rook",
+        "class_700": "Berserker",
+        "class_800": "Treasure Hunter",
+        "class_900": "Ninja",
+        "class_1000": "Morpher",
+    }
+    return classes[class_name]
+
+
 def soupify(url: str, endpoint: str = "", name: Optional[str] = None) -> BeautifulSoup:
     content: str
     name = name.replace('"', "'", 10).replace("?", "", 10).replace(":", "", 10) if name else name

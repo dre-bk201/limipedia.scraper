@@ -166,3 +166,47 @@ class Monster:
     awakening_info: Optional[AwakeningInfo] = None
     materials_needed_gear: Optional[List[Item]] = None
     materials_needed_item: Optional[List[Item]] = None
+
+@dataclass
+class FurnitureBasicInfo:
+    rarity: str
+    type: str
+    max_level: int
+    collaboration: Optional[str] = None
+
+@dataclass
+class Furniture:
+    id: int = -1
+    name: str = ""
+    thumbnail: str = ""
+    image: str = ""
+    basic_info: FurnitureBasicInfo = field(default_factory=dict)
+    stats: Stats = field(default_factory=dict)
+    sub_effect: Optional[str] = None
+
+@dataclass
+class AbilityBasicInfo:
+    effect: str = ""
+    combo_effect: str = ""
+    cost: int = -1
+    cooldown: str = ""
+    class_: List[Item] = field(default_factory=list)
+
+@dataclass
+class MethodLearned:
+    how_to_obtain: str = "-"
+    class_: Optional[str] = field(default=None)
+    proficiency_req: Optional[int] = None
+
+@dataclass
+class MethodLearnedGear:
+    gear_acquired_from: List[Item] = field(default_factory=list)
+
+@dataclass
+class Ability:
+    id: int = -1
+    name: str = ""
+    thumbnail: str = ""
+    image: str = ""
+    basic_info: AbilityBasicInfo = field(default_factory=dict)
+    method_learned: Union[MethodLearned, MethodLearnedGear] = field(default_factory=dict)

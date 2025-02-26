@@ -419,10 +419,182 @@ class Scraper:
         bump_version("defgears")
 
     def _abilities(self, rescrape: bool):
-        pass
+        rarity_routes = [
+            "/en/ability_list/index.html"
+        ]
+        ability_table = databases["abilities"].table("abilities")
+        for route in rarity_routes[:]:
+            soup = soupify(cn.URL.join(route).route, endpoint="abilities")
+            for td_a in soup.select("td a")[:]:
+                ability, basic_info = Ability(), {}
+                thumbnail, *_ = td_a.select("img")
+
+                ability.thumbnail = cn.URL.join(thumbnail.get("data-src")).route
+                ability.id = extract_id(ability.thumbnail).split("_")[-1]
+                ability.name = td_a.select_one("p").get_text()
+
+                # checks if gear exists in database, and skips if found
+                matches = ability_table.search(where("id") == ability.id)
+                if len(matches) > 0 and not rescrape:
+                    print(f"[STATUS]: found {ability.name}, skipping...")
+                    continue
+
+                details_page_soup = soupify(
+                    cn.URL.join(td_a.get("href")).route,
+                    endpoint="abilities",
+                )
+
+                ability.image = cn.URL.join(
+                    details_page_soup.select_one(".detail__img-block > img").attrs[
+                        "data-src"
+                    ]
+                ).route
+
+                print(f"[STATUS]: scraping {ability.name}")
+
+                for title_bar in details_page_soup.select(".title_bar"):
+                    match title_bar.select_one(".title_bar--text").text.strip():
+                        case cn.BASIC_INFO:
+                            basic_info_table = title_bar.find_next_sibling()
+                            dts = basic_info_table.select("dt")
+                            dds = basic_info_table.select("dd")
+
+                            for dt, dd in zip(dts, dds):
+                                key = dt.get_text().lower().replace(" ", "_")
+                                value = dd.get_text()
+
+                                if key == "class":
+                                    basic_info["class_"] = [
+                                        Item(
+                                            id=extract_id(class_img.attrs["data-src"]),
+                                            name=get_class(extract_id(class_img.attrs["data-src"])),
+                                            image=cn.URL.join(
+                                                class_img.attrs["data-src"]
+                                            ).route,
+                                            element_overlay=None,
+                                        )
+                                        for class_img in dd.select("img")
+                                    ]
+                                else:
+                                    basic_info[key] = parse_int_or(value, value)
+
+                            ability.basic_info = AbilityBasicInfo(**basic_info)
+
+                        case cn.METHOD_LEARNED:
+                            method_learned_table = title_bar.find_next_sibling()
+                            method_learned = {}
+
+                            dts = method_learned_table.select("dt")
+                            dds = method_learned_table.select("dd")
+
+                            for dt, dd in zip(dts, dds):
+                                key = dt.get_text().lower().replace(" ", "_").replace(".", "")
+                                value = dd.get_text().strip()
+                                print(key, value)
+
+                                match key:
+                                    case "how_to_obtain":
+                                        method_learned[key] = value
+                                    case "proficiency_req":
+                                        method_learned[key] = parse_int_or(value, value)
+                                    case "class":
+                                        method_learned["class_"] = value
+                                    case "gear_acquired_from":
+                                        method_learned["gear_acquired_from"] = [
+                                            Item(
+                                                id=extract_id(gear_a.attrs["href"]),
+                                                name=gear_a.select_one("p").get_text(),
+                                                image=cn.URL.join(gear_a.select_one("img").attrs["data-src"]).route,
+                                                element_overlay=None
+                                            )
+                                            for gear_a in dd.select("a")
+                                        ]
+
+                            ability.method_learned = MethodLearned(**method_learned) if "gear_acquired_from" not in method_learned else MethodLearnedGear(**method_learned)
+
+                ability_table.upsert(Document(ability.asdict(), doc_id=ability.id))
+        bump_version("abilities")
 
     def _furniture(self, rescrape: bool):
-        pass
+        rarity_routes = [
+            "/en/room_npc_list/4.html",
+            "/en/room_npc_list/3.html",
+            "/en/room_npc_list/2.html",
+        ]
+
+        furniture_table = databases["furniture"].table("furniture")
+
+        for route in rarity_routes[:]:
+            soup = soupify(cn.URL.join(route).route, endpoint="furniture")
+
+            for td_a in soup.select("td a")[:]:
+                furniture, basic_info, stats = Furniture(), {}, defaultdict(list)
+                thumbnail, *_ = td_a.select("img")
+
+                furniture.thumbnail = cn.URL.join(thumbnail.get("data-src")).route
+                furniture.id = extract_id(furniture.thumbnail)
+                furniture.name = td_a.select_one("span").get_text()
+
+                # checks if gear exists in database, and skips if found
+                matches = furniture_table.search(where("id") == furniture.id)
+                if len(matches) > 0 and not rescrape:
+                    print(f"[STATUS]: found {furniture.name}, skipping...")
+                    continue
+
+
+                details_page_soup = soupify(
+                    cn.URL.join(td_a.get("href")).route,
+                    endpoint="furniture",
+                )
+
+                furniture.image = cn.URL.join(
+                    details_page_soup.select_one(".detail__img-block > img").attrs[
+                        "data-src"
+                    ]
+                ).route
+
+                print(f"[STATUS]: scraping {furniture.name}")
+
+                for title_bar in details_page_soup.select(".title_bar"):
+                    match title_bar.select_one(".title_bar--text").text.strip():
+                        case cn.BASIC_INFO:
+                            desc_tbl = title_bar.find_next_sibling()
+
+                            labels = [
+                                label.get_text() for label in desc_tbl.select("dt")
+                            ]
+                            values = [
+                                value.get_text() for value in desc_tbl.select("dd")
+                            ]
+
+                            for label, value in zip(labels, values):
+                                basic_info[label.lower().replace(" ", "_")] = (
+                                    parse_int_or(value, value)
+                                )
+
+                            furniture.basic_info = FurnitureBasicInfo(**basic_info)
+
+                        case cn.STATS:
+                            stats_table = title_bar.find_next_sibling()
+                            for column in stats_table.select("dl")[1:]:
+                                values = [
+                                    parse_int_or(value.get_text())
+                                    for value in column.select("dd")[1:]
+                                ]
+                                stats["ATK"].append(values[0])
+                                stats["MATK"].append(values[1])
+                                stats["DEF"].append(values[2])
+                                stats["MDEF"].append(values[3])
+
+                            furniture.stats = Stats(**stats)
+
+                        case cn.SUB_EFFECT:
+                            furniture.sub_effect = title_bar.find_next_sibling().select_one("dd").get_text()
+
+                furniture_table.upsert(Document(furniture.asdict(), doc_id=furniture.id))
+        bump_version("furniture")
+
+
 
     def _monsters(self, rescrape: bool):
         rarity_routes = [
